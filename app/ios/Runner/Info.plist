@@ -60,7 +60,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose a photo that contains an ablaut listener QR code.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>ablaut listens only; the microphone stays off for live channels.</string>
+	<string>ablaut needs the microphone so translators and speakers can publish live audio on a channel.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSAppTransportSecurity</key>

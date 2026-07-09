@@ -152,7 +152,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
                     Text(
                       _loading
                           ? 'Loading event...'
-                          : 'Point the camera at an ablaut listener QR code.',
+                          : 'Point the camera at an ablaut listener or speaker QR code.',
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 8),

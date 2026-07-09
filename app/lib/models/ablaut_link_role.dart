@@ -1,0 +1,4 @@
+enum AblautLinkRole {
+  listener,
+  speaker,
+}

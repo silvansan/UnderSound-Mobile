@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/event_directory.dart';
+import 'http_cookie_utils.dart';
 import '../models/listener_link.dart';
 import '../models/listener_verify_password_response.dart';
 import '../models/public_channel.dart';
@@ -32,6 +33,86 @@ class AblautApiClient {
     final response = await _get(uri);
     final json = _decode(response);
     return PublicChannelContext.fromJson(json);
+  }
+
+  Future<PublicChannelContext> loadPublicSpeakerChannel(ListenerLink link) async {
+    final channelSlug = link.channelSlug;
+    if (channelSlug == null || channelSlug.isEmpty) {
+      throw const ApiException('A channel slug is required for speaker links.');
+    }
+
+    final uri = link.serverUrl.replace(
+      path:
+          '/api/public/speak/${Uri.encodeComponent(link.eventSlug)}/${Uri.encodeComponent(channelSlug)}',
+    );
+
+    final response = await _get(uri);
+    final json = _decode(response);
+    return PublicChannelContext.fromJson(json);
+  }
+
+  Future<String?> verifySpeakerPassword({
+    required ListenerLink link,
+    required String password,
+  }) async {
+    final channelSlug = link.channelSlug;
+    if (channelSlug == null || channelSlug.isEmpty) {
+      throw const ApiException('A channel slug is required to verify speaker access.');
+    }
+
+    final uri = link.serverUrl.replace(path: '/api/speaker/verify-password');
+    final response = await _postJson(
+      uri,
+      {
+        'eventSlug': link.eventSlug,
+        'channelSlug': channelSlug,
+        'password': password,
+      },
+    );
+    if (response.statusCode == 401) {
+      throw const ApiException(
+        'Wrong speaker password.',
+        statusCode: 401,
+      );
+    }
+    _decode(response);
+    return cookieHeaderFromResponse(response.headers);
+  }
+
+  Future<LiveKitTokenResponse> fetchSpeakerToken({
+    required ListenerLink link,
+    String? identity,
+    String? sessionCookieHeader,
+    bool canSubscribe = false,
+  }) async {
+    final channelSlug = link.channelSlug;
+    if (channelSlug == null || channelSlug.isEmpty) {
+      throw const ApiException('A channel slug is required for speaker publishing.');
+    }
+
+    final uri = link.serverUrl.replace(path: '/api/livekit/speaker-token');
+    final headers = <String, String>{};
+    if (sessionCookieHeader != null && sessionCookieHeader.isNotEmpty) {
+      headers['Cookie'] = sessionCookieHeader;
+    }
+    final response = await _postJson(
+      uri,
+      {
+        'eventSlug': link.eventSlug,
+        'channelSlug': channelSlug,
+        if (identity != null && identity.isNotEmpty) 'identity': identity,
+        'canSubscribe': canSubscribe,
+      },
+      headers: headers,
+    );
+    if (response.statusCode == 403) {
+      throw const ApiException(
+        'Speaker access is not available for this channel.',
+        statusCode: 403,
+      );
+    }
+    final json = _decode(response);
+    return LiveKitTokenResponse.fromJson(json);
   }
 
   Future<EventDirectoryContext> loadEventDirectory(ListenerLink link) async {

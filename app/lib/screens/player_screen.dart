@@ -14,6 +14,7 @@ import '../services/stream_connection_service.dart';
 import '../services/ablaut_audio_service.dart';
 import '../services/listener_session_coordinator.dart';
 import '../services/ablaut_api_client.dart';
+import '../widgets/share_channel_qr_sheet.dart';
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({
@@ -500,22 +501,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return _webrtcSnap.connected;
   }
 
-  String get _listenerUrl {
-    final channelSlug = widget.link.channelSlug;
-    if (channelSlug == null || channelSlug.isEmpty) {
-      return widget.link.serverUrl.replace(
-        pathSegments: ['listen', widget.link.eventSlug],
-      ).toString();
-    }
-
-    return widget.link.serverUrl.replace(
-      pathSegments: [
-        'listen',
-        widget.link.eventSlug,
-        channelSlug,
-      ],
-    ).toString();
-  }
+  String get _listenerUrl => widget.link.listenUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -541,6 +527,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
           title: const Text('Listen'),
           actions: [
+            IconButton(
+              tooltip: 'Share listener QR',
+              onPressed: () {
+                unawaited(
+                  showShareChannelQrSheet(
+                    context: context,
+                    link: widget.link,
+                    eventName: event.name,
+                    channelName: channel.name,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.qr_code_2_rounded),
+            ),
             IconButton(
               onPressed: (_favoriteSaved || _savingFavorite)
                   ? null

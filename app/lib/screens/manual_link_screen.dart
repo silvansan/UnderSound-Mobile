@@ -58,7 +58,7 @@ class _ManualLinkScreenState extends State<ManualLinkScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Enter listener link')),
+      appBar: AppBar(title: const Text('Enter ablaut link')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -70,8 +70,8 @@ class _ManualLinkScreenState extends State<ManualLinkScreen> {
             textInputAction: TextInputAction.done,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              labelText: 'Listener URL',
-              hintText: 'https://your-server/e/event/EN/listen?token=...',
+              labelText: 'Listener or speaker URL',
+              hintText: 'https://your-server/listen/event/en or /speak/event/en',
             ),
             onSubmitted: (_) => _connect(),
           ),

@@ -43,6 +43,17 @@ void main() {
     expect(directory.channels, isNotEmpty);
     expect(directory.access.verifyPasswordEndpoint, '/api/listener/verify-password');
   });
+
+  test('parses shared public speaker channel fixture', () async {
+    final fixture = await _readFixture('public_speak_channel.fixture.json');
+    final context = PublicChannelContext.fromJson(fixture);
+
+    expect(context.event.slug, 'contract-event');
+    expect(context.channel.slug, 'en');
+    expect(context.livekit.tokenEndpoint, '/api/livekit/speaker-token');
+    expect(context.speakerPageAvailable, isTrue);
+    expect(context.speakerPasswordRequired, isFalse);
+  });
 }
 
 Future<Map<String, dynamic>> _readFixture(String name) async {

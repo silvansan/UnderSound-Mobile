@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 Future<String?> showListenerPasswordDialog(
   BuildContext context, {
   String title = 'Listener password',
+  String description =
+      'This channel requires a listener password from the organizer.',
   String? errorText,
 }) {
   return showDialog<String>(
@@ -11,6 +13,7 @@ Future<String?> showListenerPasswordDialog(
     builder: (dialogContext) {
       return _ListenerPasswordDialog(
         title: title,
+        description: description,
         initialError: errorText,
       );
     },
@@ -20,10 +23,12 @@ Future<String?> showListenerPasswordDialog(
 class _ListenerPasswordDialog extends StatefulWidget {
   const _ListenerPasswordDialog({
     required this.title,
+    required this.description,
     this.initialError,
   });
 
   final String title;
+  final String description;
   final String? initialError;
 
   @override
@@ -64,9 +69,7 @@ class _ListenerPasswordDialogState extends State<_ListenerPasswordDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'This channel requires a listener password from the organizer.',
-            ),
+            Text(widget.description),
             const SizedBox(height: 12),
             TextFormField(
               controller: _controller,

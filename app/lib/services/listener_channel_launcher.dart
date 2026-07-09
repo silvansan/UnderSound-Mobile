@@ -4,21 +4,26 @@ import '../models/favorite_channel.dart';
 import '../models/listener_link.dart';
 import '../screens/event_channels_screen.dart';
 import '../screens/player_screen.dart';
+import '../screens/speaker_screen.dart';
 import 'favorites_service.dart';
 import 'listener_session_coordinator.dart';
+import 'speaker_session_coordinator.dart';
 import 'ablaut_api_client.dart';
 
 class ListenerChannelLauncher {
   const ListenerChannelLauncher({
     AblautApiClient? api,
     ListenerSessionCoordinator? coordinator,
+    SpeakerSessionCoordinator? speakerCoordinator,
     FavoritesService? favoritesService,
   })  : _api = api ?? const AblautApiClient(),
         _coordinator = coordinator ?? const ListenerSessionCoordinator(),
+        _speakerCoordinator = speakerCoordinator ?? const SpeakerSessionCoordinator(),
         _favoritesService = favoritesService ?? const FavoritesService();
 
   final AblautApiClient _api;
   final ListenerSessionCoordinator _coordinator;
+  final SpeakerSessionCoordinator _speakerCoordinator;
   final FavoritesService _favoritesService;
 
   Future<void> openLink({
@@ -28,6 +33,15 @@ class ListenerChannelLauncher {
     bool addToFavorites = false,
     bool replaceCurrentRoute = false,
   }) async {
+    if (link.isSpeaker) {
+      await openSpeaker(
+        context: context,
+        link: link,
+        replaceCurrentRoute: replaceCurrentRoute,
+      );
+      return;
+    }
+
     if (link.isEventDirectory) {
       final screen = EventChannelsScreen(
         link: link,
@@ -110,6 +124,46 @@ class ListenerChannelLauncher {
       eventListenerSessionToken: eventListenerSessionToken,
     );
     final route = MaterialPageRoute(builder: (_) => player);
+    if (replaceCurrentRoute) {
+      await Navigator.of(context).pushReplacement(route);
+    } else {
+      await Navigator.of(context).push(route);
+    }
+  }
+
+  Future<void> openSpeaker({
+    required BuildContext context,
+    required ListenerLink link,
+    bool replaceCurrentRoute = false,
+  }) async {
+    if (link.isEventDirectory) {
+      throw const ListenerAccessException(
+        'Speaker links must include a channel.',
+      );
+    }
+
+    final channelContext = await _api.loadPublicSpeakerChannel(link);
+    if (!context.mounted) {
+      return;
+    }
+
+    _speakerCoordinator.ensureSpeakerAccessible(channelContext);
+    final sessionCookieHeader = await _speakerCoordinator.resolveSessionCookies(
+      context: context,
+      link: link,
+      channelContext: channelContext,
+    );
+
+    if (!context.mounted) {
+      return;
+    }
+
+    final screen = SpeakerScreen(
+      link: link,
+      channelContext: channelContext,
+      sessionCookieHeader: sessionCookieHeader,
+    );
+    final route = MaterialPageRoute(builder: (_) => screen);
     if (replaceCurrentRoute) {
       await Navigator.of(context).pushReplacement(route);
     } else {

@@ -6,12 +6,16 @@ class PublicEvent {
     required this.slug,
     required this.name,
     required this.description,
+    this.speakerPasswordEnabled = false,
   });
 
   final String id;
   final String slug;
   final String name;
   final String description;
+  final bool speakerPasswordEnabled;
+
+  bool get speakerPasswordRequired => speakerPasswordEnabled;
 
   factory PublicEvent.fromJson(Map<String, dynamic> json) {
     return PublicEvent(
@@ -23,6 +27,7 @@ class PublicEvent {
               json['location'] ??
               '')
           .toString(),
+      speakerPasswordEnabled: json['speakerPasswordEnabled'] == true,
     );
   }
 }
@@ -40,6 +45,8 @@ class PublicChannel {
     required this.icecastFallbackUrl,
     required this.listenerTokenMode,
     this.recommendedTransport,
+    this.speakerPageEnabled = true,
+    this.speakerPasswordEnabled = false,
     this.transportStatus,
   });
 
@@ -54,7 +61,12 @@ class PublicChannel {
   final String icecastFallbackUrl;
   final String listenerTokenMode;
   final String? recommendedTransport;
+  final bool speakerPageEnabled;
+  final bool speakerPasswordEnabled;
   final String? transportStatus;
+
+  bool get speakerPasswordRequired => speakerPasswordEnabled;
+  bool get speakerPageAvailable => speakerPageEnabled;
 
   factory PublicChannel.fromJson(Map<String, dynamic> json) {
     final rawHlsUrl = json['hlsUrl']?.toString();
@@ -75,6 +87,8 @@ class PublicChannel {
       icecastFallbackUrl: json['icecastFallbackUrl']?.toString() ?? '',
       listenerTokenMode: json['listenerTokenMode']?.toString() ?? '',
       recommendedTransport: json['recommendedTransport']?.toString(),
+      speakerPageEnabled: json['speakerPageEnabled'] != false,
+      speakerPasswordEnabled: json['speakerPasswordEnabled'] == true,
       transportStatus: json['transportStatus']?.toString(),
     );
   }
@@ -114,6 +128,11 @@ class PublicChannelContext {
   final PublicLiveKitContext livekit;
   final String logoUrl;
   final PublicListenerAccess access;
+
+  bool get speakerPasswordRequired =>
+      event.speakerPasswordRequired || channel.speakerPasswordRequired;
+
+  bool get speakerPageAvailable => channel.speakerPageAvailable;
 
   factory PublicChannelContext.fromJson(Map<String, dynamic> json) {
     return PublicChannelContext(
